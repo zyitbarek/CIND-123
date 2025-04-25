@@ -1,0 +1,302 @@
+---
+title: "Assignment 2 (10%) - CIND 123"
+author: Zion Yitbarek
+date: March 14th,2025
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Data Analytics: Basic Methods
+
+## Instructions
+
+This assignment can be submitted using either Python or R, whichever you prefer.
+
+- **If using R**, you must submit an RMD file with its knitted file (PDF or HTML). To learn more about knitting and R markdown, visit [R Markdown](http://rmarkdown.rstudio.com).
+- **If using Python**, you must submit an IPYNB file and its exported PDF/HTML with clearly printed/shown answers.
+
+Failing to submit both files ({RMD + knitted PDF/HTML} OR {IPYNB + PDF/HTML}) will be subject to a 30% mark deduction.
+
+**NOTE:** IF YOU USE `R STUDIO`, YOU SHOULD NEVER HAVE `install.packages` IN YOUR CODE; OTHERWISE, THE `Knit` OPTION WILL RAISE AN ERROR. COMMENT OUT ALL PACKAGE INSTALLATIONS BUT KEEP `library()` CALLS.
+
+**NOTE:** If you answer the questions in R, all your answers should be in R (ignore Python questions). If you answer the questions in Python, all your answers should be in Python (ignore R questions). You are not allowed to switch languages in this assignment.
+
+
+
+## Question 1 (10 points)
+
+A hospital pharmacy prepares 100 medication doses daily. Based on historical data, each dose has a 3% probability of being incorrectly prepared, requiring disposal.
+
+### Q1a (5 points)
+
+Calculate the probability that at least 5 doses are incorrectly prepared in a given day.
+
+```{r}
+1 - pbinom(4, 100, 0.03)
+
+```
+
+
+### Q1b (5 points)
+
+Estimate the number of incorrectly prepared doses in a day using an appropriate probability distribution.
+
+```{r}
+#Q1b follows a binomial distribution. 
+#n=100 , p= 0.03
+# Expected value (E(x))= n*p
+
+expected_value=100*0.03
+print(expected_value)
+
+```
+
+
+## Question 2 (10 points)
+
+A call center receives an average of 3 customer complaints per hour. 
+
+### Q2a (5 points)
+
+Calculate the probability that the call center receives exactly 5 complaints in an hour.
+
+```{r}
+# This question involves 
+k <- 5
+lambda <-3
+
+# Calculate the probability using the dpois function
+probability <- dpois(k, lambda)
+
+# Print the result
+print(probability)
+
+```
+
+
+
+### Q2b (5 points)
+
+Estimate the number of complaints received in an hour.
+
+```{r}
+# Number of complaints is equal to lambda in the first part of question 2 and lambda=3. Therefore: 
+print(lambda)
+
+```
+
+
+## Question 3 (20 points)
+
+The battery life of a certain smartphone model follows a normal distribution with a mean of 12 hours and a standard deviation of 2 hours.
+
+### Q3a (5 points)
+
+Calculate the probability that a randomly selected phone lasts more than 14 hours on a full charge.
+
+```{r}
+# Given values
+mu <- 12   # Mean battery life (hours)
+sigma <- 2 # Standard deviation (hours)
+X <- 14    # Value we're comparing the mean to (hours)
+
+prob_more_than_14 <- 1 - pnorm(X, mu, sigma) #Calculating the probability of the right tail to see the probability of a randomly selected phone to last more than 14 hours
+
+print(prob_more_than_14)
+
+```
+
+
+### Q3b (5 points)
+
+Estimate the battery life of one randomly selected phone from this distribution.
+
+```{r}
+# Since this problem contains normal distribution, the battery life of one randomly selected phone is actually the same value as the mean battery life
+ print(mu)
+
+```
+
+
+
+### Q3c (5 points)
+
+Calculate the probability that a phone's battery life is between 10 and 14 hours.
+
+```{r}
+mu <- 12   # Mean battery life (hours)
+sigma <- 2 # Standard deviation (hours)
+
+# Calculate the cumulative probabilities for 14 and 10 hours
+prob_14 <- pnorm(14, mu, sigma)
+prob_10 <- pnorm(10, mu, sigma)
+
+difference14_10 <- prob_14 - prob_10
+print(difference14_10)
+
+
+```
+
+
+### Q3d (5 points)
+
+Determine the 5th percentile of battery life (i.e., the battery life below which only 5% of phones fall).
+
+```{r}
+mu <- 12   # Mean battery life (hours)
+sigma <- 2 # Standard deviation (hours)
+
+percent_5th <- qnorm(0.05, mu, sigma)
+print(percent_5th)
+
+```
+## Question 4 (60 points)
+
+The Titanic Passenger Survival Data Set provides information on the fate of passengers on the fatal maiden voyage of the ocean liner “Titanic.” The dataset is available from the kaggle website ([Titanic Dataset](https://www.kaggle.com/c/titanic/data)) in several formats. Download the Titanic Data Set `titanic.csv` which is given on assignment 2's page. Then, read it using the appropriate commands in `R` or `Python`.
+
+| Column Name | Description                         | Values                                  |
+|-------------|-------------------------------------|-----------------------------------------|
+| survival    | Survival                            | 0 = No, 1 = Yes                         |
+| pclass      | Ticket class                        | 1 = 1st, 2 = 2nd, 3 = 3rd               |
+| sex         | Sex                                 |                                         |
+| age         | Age in years                        |                                         |
+| sibsp       | # of siblings / spouses aboard the Titanic |                                         |
+| parch       | # of parents / children aboard the Titanic |                                         |
+| ticket      | Ticket number                       |                                         |
+| fare        | Passenger fare                      |                                         |
+| cabin       | Cabin number                        |                                         |
+| embarked    | Port of Embarkation                 | C = Cherbourg, Q = Queenstown, S = Southampton |
+
+### Q4a (5 points)
+
+Extract and show the columns `name`, `fare`, `sibsp`, and `parch` into a new data frame named `titanicSubset`. Show the `head` of the dataframe.
+
+```{r}
+titanic_data <- read.csv("titanic.csv")
+titanicSubset <- titanic_data[,  c("name", "fare", "sibsp", "parch")]
+head(titanicSubset)
+
+
+```
+
+
+### 4b (5 points)
+
+Numerical data: Calculate the total number of passengers who were children (age less than 18) and survived. 
+
+Print the value.
+
+```{r}
+#Checking the structure of the dataset before filtering
+str(titanic_data)
+
+#Code used to calculate the total number of passengers who are children (age less than 18)
+child_survived <- titanic_data[titanic_data$age < 18 & titanic_data$survived == 1, ]
+num_child_survived <- nrow(child_survived)
+print(num_child_survived)
+
+
+```
+### Q4c (5 points)
+
+Categorical data: Calculate the number of passengers by sex.
+
+Print the value.
+
+```{r}
+passengers_sex <- table(titanic_data$sex)
+print(passengers_sex)
+
+```
+
+
+### Q4d (5 points)
+
+Find the passengers in the data frame whose age information is missing, and fill them with the median age of passengers.
+
+Show the head of the dataframe.
+
+```{r}
+
+median_age <- median(titanic_data$age, na.rm = TRUE)
+titanic_data$age[is.na(titanic_data$age)] <- median_age
+head(titanic_data) 
+
+```
+
+
+
+### Q4e (10 points)
+
+Use the `aggregate()` function to calculate the survival count of each passenger class (`pclass`) and calculate the survival rate of passengers in each class. Draw a conclusion on which passenger class has the highest survival rate.
+
+Print the value and type your response as a comment.
+
+```{r}
+survival_by_class <- aggregate(survived ~ pclass, data = titanic_data, 
+                               FUN = function(x) c(count = sum(x), rate = mean(x)))
+
+print(survival_by_class)
+```
+
+### Q4f (10 points)
+
+Use a boxplot to display the distribution of fare for each sex. Infer which gender tends to pay higher fares.
+
+Have the plot and then your comment.
+
+```{r}
+boxplot(fare ~ sex, data = titanic_data, 
+        main = "Distribution of Fare by Gender", 
+        xlab = "Sex", 
+        ylab = "Fare", 
+        col = c("pink", "lightblue"))
+
+#Based on the boxplot shown below, it can be assumed that women are generally paying higher fares on average compared to men due to the higher median for women. However, female fares show more variability with a wider IQR and longer (upper) whiskers which indicates possible fare diversity amongst this group. Men, on the other hand have more outliers which suggests that although majority of males paid fares close to the median value,there are a few men that paid significantly higher fares
+```
+
+### Q4g (10 points)
+
+Calculate the mean fare for each sex. Describe if the calculation aligns with the boxplot.
+
+Print the value and comment on it.
+
+```{r}
+
+mean_fare_by_sex <- aggregate(fare ~ sex, data = titanic_data, FUN = mean)
+print(mean_fare_by_sex)
+
+#"From the mean fare calculation, its evident that women pay a higher fare than men on average as the mean fare for women is approximately 46.20 while the mean fare for men is 26.15. Keeping this in mind, this means that this observation aligns with the boxplot created in the last question
+
+```
+
+
+### Q4h (10 points)
+
+Use a `for` loop and `if` control statements to list the names of women, aged 50 or older, who embarked from Southampton (S) on the Titanic. Ensure these women have non-empty home destinations.
+
+Print first 5 people only.
+
+```{r}
+women_50_or_older <- c()
+
+for (i in 1:nrow(titanic_data)) {
+  if (titanic_data$sex[i] == "female" && 
+      titanic_data$age[i] >= 50 && 
+      titanic_data$embarked[i] == "S" && 
+      !is.na(titanic_data$home.dest[i])) {
+    women_50_or_older <- c(women_50_or_older, titanic_data$name[i])
+  }
+}
+
+
+print(head(women_50_or_older, 5))
+
+```
+
+
+This is the end of Assignment 2.
+
+
+

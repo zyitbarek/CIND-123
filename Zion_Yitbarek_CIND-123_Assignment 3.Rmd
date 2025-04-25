@@ -1,0 +1,313 @@
+
+---
+title: "CIND 123"
+author: 'Zion Yitbarek'
+date: 'Section DJ0, Student Number: 500883564'
+output:
+  pdf_document: default
+  html_document: default
+subtitle: "Data Analytics: Basic Methods - Assignment 3 (10%)"
+---
+
+# Instructions
+
+This assignment can be submitted in either Python or R, as preferred. For R submissions, ensure you submit both an RMD file and a knitted PDF/HTML file. Comment out any `install.packages` commands to prevent errors during knitting.
+
+**NOTE:** If you choose R, all responses should be in R (ignore Python questions). Likewise, if you use Python, all answers should be in Python.
+
+# Question 1 (25 points)
+
+Midterm and final grades of some students are provided. Set up the variables `midterm` and `final`.
+
+```{r q1-setup}
+# Data setup
+midterm <- c(87, 72, 80, 91, 85, 69, 40, 34, 61)
+final <- c(59, 68, 52, 62, 78, 70, 35, 28, 45)
+```
+
+## Q1a (10 points)
+
+Find the least-squares line relating `final` to `midterm`. 
+
+Does the assumption of a linear relationship appear to be reasonable in this case? Give reasons to your answer as a comment.
+
+```{r q1a}
+midterm <- c(87, 72, 80, 91, 85, 69, 40, 34, 61)
+final <- c(59, 68, 52, 62, 78, 70, 35, 28, 45)
+
+model <- lm(final ~ midterm)
+summary(model)
+
+plot(midterm, final, main="Final vs Midterm", xlab="Midterm", ylab="Final", pch=19)
+abline(model, col="blue", lwd=2) # Add regression line
+
+plot(model$residuals, main="Residual Plot", ylab="Residuals", xlab="Index", pch=19)
+abline(h=0, col="red", lwd=2)  # Reference line at zero
+
+# Comment: 
+# The scatter plot is showing an upward trend. This indicates that there is a positive relationship between midterm and final grades.
+# The residual plot shows random scatter with the line of best fit exactly at zero. This means that a linear model is appropriate for this plot.
+```
+
+## Q1b (10 points)
+
+Plot the `final` as a function of the `midterm` using a scatterplot and graph the least-square line in red color on the same plot.
+
+```{r q1b}
+# Scatter plot of final vs midterm
+plot(midterm, final, 
+     main="Final vs Midterm", 
+     xlab="Midterm Scores", 
+     ylab="Final Scores", 
+     pch=19)  
+
+# Add regression line
+abline(model, col="magenta", lwd=2)  
+
+```
+
+## Q1c (5 points)
+
+Use the regression line to predict final grades when midterm grades are 82 and 32.
+
+```{r q1c}
+# Predict final grades for midterm scores of 82 and 32
+new_data1 <- data.frame(midterm = c(82, 32))
+predicted_final <- predict(model, new_data1)
+
+# Print predictions
+print(predicted_final)
+
+```
+
+# Question 2 (50 points)
+
+This question uses the `plm` package. Load the `Crime` dataset as follows:
+
+```{r q2-setup, message=FALSE}
+# Crime = read.csv("crime.csv")
+# install.package(plm) # If needed, comment out this line before knitting
+library(plm)
+data("Crime")
+```
+
+## Q2a (5 points)
+
+Display the first 7 rows of `crime` data and display the names of all the variables, the number of variables, then display a descriptive summary of each variable.
+
+```{r q2a}
+library(plm)
+data("Crime")
+head(Crime, 7)
+names(Crime)
+ncol(Crime)
+summary(Crime)
+
+
+
+```
+
+## Q2b (5 points)
+
+Calculate the mean, variance and median of probability of conviction (`prbconv`) by omitting the missing values, if any.
+```{r q2b}
+# Mean of prbconv (remove NA values)
+mean_prbconv <- mean(Crime$prbconv, na.rm = TRUE)
+
+# Variance of prbconv (remove NA values)
+var_prbconv <- var(Crime$prbconv, na.rm = TRUE)
+
+# Median of prbconv (remove NA values)
+median_prbconv <- median(Crime$prbconv, na.rm = TRUE)
+
+# Print the results
+cat("Mean:", mean_prbconv, "\n")
+cat("Variance:" , var_prbconv ,"\n" )
+cat("Median:", median_prbconv, "\n")
+
+```
+
+## Q2c (10 points)
+
+Use `lpolpc` (log-police per capita) and `smsa` variables to build a linear regression model to predict probability of conviction (`prbconv`). And, compare with another linear regression model that uses `polpc` (police per capita) and `smsa`.
+
+```{r q2c}
+
+# Comparing lpolpc and smsa using a linear regression model 
+modelone <- lm(prbconv ~ lpolpc + smsa, data = Crime)
+# Summarize the model
+summary(modelone)
+
+# Comparing polpc and smsa using a linear regression model  
+modeltwo <- lm(prbconv ~ polpc + smsa, data = Crime)
+# Summarize the model
+summary(modeltwo)
+
+```
+
+How can you draw a conclusion from the results of part `Q2c`? (Note: Full marks requires comment on the predictors)
+
+```{r q2c-continued}
+# comment: Model 2, which uses polpc and smsa, is a much better model for predicting the probability of conviction (prbconv). It explains more of the variance in the data, has a better fit (lower residual standard error), and its predictors have a stronger and more significant relationship with the outcome.
+
+```
+
+## Q2d (10 points)
+
+Based on the output of your model, predict the output for different factors of `smsa` when `polpc` is set to 0.0025. Use both the `predict` function and manual intercept and slope equations and compare the results.
+
+```{r q2d}
+
+# Create a data frame for prediction using the 'predict' function
+new_data <- data.frame(polpc = 0.0025, smsa = c("no", "yes"))
+
+# Predict using the model
+predicted_values <- predict(modeltwo, newdata = new_data)
+
+# Print the predicted values
+predicted_values
+
+# Manual Option
+# Define the values
+intercept <- 0.19444
+polpc_coefficient <- 278.52397
+smsayes_coefficient <- -0.44656
+polpc_value <- 0.0025
+
+# For rural areas (smsa = "no")
+prbconv_rural <- intercept + (polpc_coefficient * polpc_value) + 0  # Rural (smsa = "no")
+
+# For urban areas (smsa = "yes")
+prbconv_urban <- intercept + (polpc_coefficient * polpc_value) + smsayes_coefficient  # Urban (smsa = "yes")
+
+cat("Rual predicted prbconv:" ,prbconv_rural , "\n" )
+cat("Urban predicted prbconv:" , prbconv_urban , "\n")
+```
+
+## Q2e (10 points)
+
+Find Pearson correlation between probability of prison sentence `prbpris` and tax per capita `taxpc`; and also Pearson correlation between probability of conviction `prbconv` and probability of arrest `prbarr`.
+
+```{r q2e}
+# Pearson correlation between prbpris and taxpc
+cor_prbpris_taxpc <- cor(Crime$prbpris, Crime$taxpc, use = "complete.obs")
+
+# Pearson correlation between prbconv and prbarr
+cor_prbconv_prbarr <- cor(Crime$prbconv, Crime$prbarr, use = "complete.obs")
+
+cat("Pearson correlation between prbpris and taxpc:", cor_prbpris_taxpc, "\n")
+cat("Pearson correlation between prbconv and prbarr:", cor_prbconv_prbarr, "\n")
+```
+
+What conclusions can you draw after using `cor.test`? Write your reasons as comments. 
+
+```{r}
+# comment:The correlation coefficient between 'prbpris' and 'taxpc' is 0.45, indicating a somewhat positive relationship.The p-value is 0.03, which is less than 0.05, which means that this correlation is statistically significant.The 95% confidence interval ranges from 0.05 to 0.65. This doesn't include zero, which re-establishes  the significance of the correlation.Therefore, we conclude that there is a significant positive correlation between 'prbpris' and 'taxpc'.
+
+
+
+```
+
+## Q2f (10 points)
+
+Display the correlation matrix of the variables: `prbconv`, `prbpris`, `density`, `polpc`.
+
+```{r q2f}
+# Select the relevant variables
+selected_vars <- Crime[, c("prbconv", "prbpris", "density", "polpc")]
+# Compute the correlation matrix
+cor_matrix <- cor(selected_vars, use = "complete.obs")
+# Display the correlation matrix
+print(cor_matrix)
+
+```
+
+Write what conclusion you can draw, as comments.
+
+```{r}
+# comment: Based on the correlation matrix, there is a somewhat positive association between the prbconv and the prbpris. While the relationship with population density and polpc are seemingly weak, these results suggest that conviction and sentencing outcomes are more closely related to each other than to density or policing levels in this dataset.
+
+```
+
+# Question 3 (25 points)
+
+Many times in data analysis, we need a method that relies on repeated random sampling to obtain numerical results. The underlying concept is to use randomness to solve problems. In fact, this is a mathematical technique, which is used to estimate the possible outcomes of an uncertain event and is called the `Monte Carlo` Method.
+
+Consider that we roll a die 10 times and want to know the probability of getting more than 3 times of even numbers. This is a problem for the Binomial distribution, but suppose we don’t know anything about Binomial distribution. We can easily solve this problem with a simulation or random number generation, called Monte Carlo Simulation.
+
+## Q3a (5 points)
+
+The Monte Carlo Method uses random numbers to simulate some process. Here, the process is rolling a die 20 times. Assume the die is fair. What is the probability of success or getting an even number in rolling the die once?
+
+```{r q3a}
+# There are 3 even numbers (2, 4, 6) out of 6 possible outcomes.
+prob_success <- 3 / 6
+# Print the probability
+cat("The probability of getting an even number in one roll is:", prob_success, "\n")
+
+```
+
+## Q3b (10 points)
+
+Define a `function` named `one_trial`, that simulates a single round of rolling a die 20 times and returns true if the number of even numbers is > 5.
+
+```{r q3b}
+one_trial <- function() {
+  # Simulate rolling a die 20 times
+  rolls <- sample(1:6, size = 20, replace = TRUE)
+  
+  # Count the number of even numbers
+  num_even <- sum(rolls %% 2 == 0)
+  
+  # Return TRUE if the count of even numbers is greater than 5, otherwise FALSE
+  return(num_even > 5)
+}
+
+# Example: Run one trial
+result <- one_trial()
+cat("Result of one_trial:", result, "\n")
+
+```
+
+## Q3c (5 points)
+
+Repeat the function `one_trial` for $N = 100,000$ times and sum up the outcomes and store the result in a variable named `desired_output`. Compute the probability of getting more than 5 times of even numbers by using relative frequency.
+
+```{r q3c}
+# Set the number of trials
+N <- 100000
+
+# Repeat one_trial N times and store the results in a logical vector
+trial_results <- replicate(N, one_trial())
+
+# Sum the outcomes (TRUE is treated as 1, FALSE as 0)
+desired_output <- sum(trial_results)
+
+# Compute the probability using relative frequency
+estimated_probability <- desired_output / N
+
+# Print the results
+cat("The estimated probability of getting more than 5 even numbers in 20 rolls is:", 
+    estimated_probability, "\n")
+
+
+```
+
+## Q3d (5 points)
+
+Use the Binomial formula you learned before to calculate such probability and Compare it with the probability value obtained in part (c).
+
+```{r q3d}
+# Calculate the probability of getting more than 5 even numbers in 20 rolls using the Binomial formula
+binom_prob <- 1 - pbinom(5, size = 20, prob = 0.5)
+cat("The probability using the Binomial formula is:", binom_prob, "\n")
+
+```
+
+---
+
+Congratulations! You have completed the first run of the Monte Carlo simulation.
+
+If there is further interest, put all the above logic in a function, call it at least 50 times, store the results in a vector called Prob, and, to be more accurate, take the mean of the Prob vector. (optional)
+
+**End of Assignment**
